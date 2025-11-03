@@ -18,22 +18,23 @@
 | 24127437  | Trịnh Khánh Linh |
 
 ## II. Problem Decomposition
-- Manage overall project progress
-- Pre-process input of user before using algorithm to compute
-- Format the output shown to user
-- Integrate routing API and recommendation API
+
+- Nutrition value
+- Saving data system
+- Recommendation API
+- Pipeline
 - Interface design for website
-- Integrate map into website with basic functions
+- Integrate map and routing API
 - Test and collect feedback
 
 ## III. Task Distribution
 
 | Task | Member in charge |
 |------|------------------|
-| Manage overall project progress | Nguyễn Lê Hoàng Khải |
-| Pre-process input of user | Trần Lê Hoàng Gia |
-| Format the output shown to user | Nguyễn Nhựt Huy |
-| Integrate routing API and recommendation API | Vũ Duy Nhất |
-| Interface design for website | Nguyễn Minh Huy |
-| Integrate map into website | Nguyễn Ngọc Gia Bảo |
-| Test and collect feedback | Trịnh Khánh Linh |
+| Integrate map and routing API | Nguyễn Lê Hoàng Khải |
+| Nutrition value | Trần Lê Hoàng Gia |
+| Saving data system | Nguyễn Nhựt Huy |
+| Recommendation API | Vũ Duy Nhất |
+| Interface design for website | Trần Quang Minh Huy |
+| Test and collect feedback | Nguyễn Ngọc Gia Bảo |
+| Pipeline | Trịnh Khánh Linh |
