@@ -13,7 +13,7 @@
 | 24127028  | Trần Lê Hoàng Gia |
 | 24127095  | Vũ Duy Nhất |
 | 24127398  | Nguyễn Nhựt Huy |
-| 24127403  | Nguyễn Minh Huy |
+| 24127403  | Trần Quang Minh Huy |
 | 24127408  | Nguyễn Lê Hoàng Khải |
 | 24127437  | Trịnh Khánh Linh |
 
