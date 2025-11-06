@@ -1,7 +1,7 @@
 ﻿# Sub-problem: Integrate Map and Routing API
 **Git Branch:** `24127408`  
 **Responsible:** Nguyễn Lê Hoàng Khải  
-**Project:** *Food Recommend System (Gemini + Map API)*  
+**Project:** *Restaurant Recommend System (Gemini + Map API)*  
 
 ---
 
@@ -32,7 +32,7 @@ Design and implement a **system that suggests optimal routes** to restaurants.
 | **Routing** | OpenRouteService | Compute optimal driving routes. |
 | **Map Display** | Leaflet.js + HTML + CSS + JavaScript | Render interactive map. |
 | **GPS** | HTML5 Geolocation API | Track current user location dynamically. |
-| **Geocoding** | OpenRouteService | Convert address to coordinates for routing. |
+| **Geocoding** | Geoapify | Convert address to coordinates for routing. |
 | **Processing Input** | Regex | Format input into address formatted for OpenRouteService.
 
 ---
@@ -47,10 +47,10 @@ def normalize_address(address: str) -> str:
     number = number_match.group(1) if number_match else ""
 
     street_name = re.sub(r"^\d+[\/\d]*\s*", "", main_part).strip()
-    street_name = re.sub(r"^(Đ\.?\s*)", "", street_name, flags=re.IGNORECASE).strip()
+    street_name = re.sub(r"^(Đ\.?|Đg\.?)\s*", "", street_name, flags=re.IGNORECASE).strip()
 
-    normalized = f"Hẻm {number} Đường {street_name}, Ho Chi Minh City, HC, Vietnam"
-    return normalized
+    normalized = f"Hẻm {number} {street_name}, Ho Chi Minh City, Vietnam"
+    return normalized.strip()
 ```
 
 ### 2. Dynamic User Location (GPS)
@@ -80,36 +80,54 @@ let watchId = navigator.geolocation.watchPosition(
 
 ### 3. Geocoding Addresses
 ```python
-def geocode_address(address):
-    geocode = client.pelias_search(text=address)
-    if not geocode["features"]:
+def geocode_address(address: str):
+    normalized = normalize_address(address)
+    url = f"https://api.geoapify.com/v1/geocode/search?text={normalized}&apiKey={GEOAPIFY_API_KEY}"
+
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise ConnectionError(f"Lỗi kết nối Geoapify: {response.status_code}")
+
+    data = response.json()
+    features = data.get("features", [])
+    if not features:
         raise ValueError(f"Không tìm thấy toạ độ cho địa chỉ: {address}")
-    coords = geocode["features"][0]["geometry"]["coordinates"]
-    return coords
+
+    lon = features[0]["geometry"]["coordinates"][0]
+    lat = features[0]["geometry"]["coordinates"][1]
+    return (lon, lat)
 ```
 
 ### 4. Preprocessing and Caching Routes
 ```python
 def preprocess_restaurants(user_lat, user_lon):
-    with open("restaurants.json", "r", encoding="utf-8") as f:
+    input_path = "restaurants.json"
+    output_path = "restaurants_preprocessed.json"
+
+    if not os.path.exists(input_path):
+        raise FileNotFoundError(f"Không tìm thấy file {input_path}")
+
+    with open(input_path, "r", encoding="utf-8") as f:
         restaurants = json.load(f)
 
-    for i, r in enumerate(restaurants):
-        normalized_address = normalize_address(r["Address"])
-        coords = geocode_address(normalized_address)
-        route = client.directions(
-            coordinates=[(user_lon, user_lat), tuple(coords)],
-            profile="driving-car",
-            format="geojson"
-        )
+    for r in restaurants:
+        try:
+            dest_coords = geocode_address(r["Address"])
+            route_coords = get_route(user_lat, user_lon, dest_coords[1], dest_coords[0])
 
-        r["Address"] = normalized_address
-        r["Coordinates"] = coords
-        r["Route"] = route["features"][0]["geometry"]["coordinates"]
+            r["NormalizedAddress"] = normalize_address(r["Address"])
+            r["Coordinates"] = dest_coords
+            r["Route"] = route_coords
 
-    with open("restaurants_preprocessed.json", "w", encoding="utf-8") as f:
+            name = r.get("Name", r.get("Address", "Unknown"))
+            print(f"✅ Xử lý: {name}")
+        except Exception as e:
+            name = r.get("Name", r.get("Address", "Unknown"))
+            print(f"⚠️ Lỗi xử lý {name}: {e}")
+            continue
+
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(restaurants, f, ensure_ascii=False, indent=2)
-
 ```
 
 ### 5. Map Display
@@ -130,4 +148,4 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 | **Risk** | High | Low | Low |
 | **Project suitability** | Not necessary | Highly suitable | Suitable |
 
- >**Conclusion:** Choose OpenRouteService because it meets all project requirements, is easy to implement, and provides ample daily requests.
+ >**Conclusion:** Choose OpenRouteService because it meets all project requirements, is easy to implement, and provides ample daily requests. Besides, use Geoapify for more accurate geocoding.
