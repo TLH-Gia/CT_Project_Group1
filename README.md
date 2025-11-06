@@ -32,7 +32,7 @@
 | Task | Member in charge |
 |------|------------------|
 | Integrate map and routing API | Nguyễn Lê Hoàng Khải |
-| Nutrition value | Trần Lê Hoàng Gia |
+| Food Dectection | Trần Lê Hoàng Gia |
 | Saving data system | Nguyễn Nhựt Huy |
 | Recommendation API | Vũ Duy Nhất |
 | Interface design for website | Trần Quang Minh Huy |
