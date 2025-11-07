@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cảm ơn</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="banner">
+    <img src="{{ url_for('static', filename='img/Background header.png') }}" alt="banner" />
+  </header>
+
+  <main class="main-wrap">
+    <div class="form-card">
+      <h1>🎉 Cảm ơn bạn đã gửi phản hồi!</h1>
+      <p>Nhóm Food Tourism sẽ xem xét góp ý và cập nhật sớm. Cảm ơn bạn đã giúp chúng tôi tốt hơn 💖</p>
+      <p><a href="{{ url_for('form') }}">Gửi thêm phản hồi</a></p>
+    </div>
+  </main>
+
+  <div class="mascot-wrap">
+    <img src="{{ url_for('static', filename='img/animation-unscreen.gif') }}" alt="mascot">
+  </div>
+</body>
+</html>

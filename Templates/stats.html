@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thống kê phản hồi</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="banner">
+    <img src="{{ url_for('static', filename='img/Background header.png') }}" alt="banner" />
+  </header>
+
+  <main class="main-wrap">
+    <div class="form-card">
+      <h1>📊 Thống kê phản hồi</h1>
+
+      {% if feedbacks %}
+        <table border="1" cellpadding="10" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Tên</th>
+              <th>Email</th>
+              <th>Đánh giá</th>
+              <th>Nhận xét</th>
+              <th>Ngày gửi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in feedbacks %}
+            <tr>
+              <td>{{ row[0] }}</td>
+              <td>{{ row[1] }}</td>
+              <td>{{ row[2] }}</td>
+              <td>{{ row[3] }}</td>
+              <td>{{ row[4] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>Chưa có phản hồi nào được ghi nhận.</p>
+      {% endif %}
+
+      <p><a href="{{ url_for('form') }}">⬅ Quay lại trang góp ý</a></p>
+    </div>
+  </main>
+
+  <div class="mascot-wrap">
+    <img src="{{ url_for('static', filename='img/animation-unscreen.gif') }}" alt="mascot">
+  </div>
+</body>
+</html>

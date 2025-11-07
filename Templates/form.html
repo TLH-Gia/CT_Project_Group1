@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Feedback — Food Tourism</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Banner -->
+  <header class="banner">
+    <img src="{{ url_for('static', filename='img/Background header.png') }}" alt="banner" />
+  </header>
+
+  <main class="main-wrap">
+    <div class="form-card">
+      <h1>Form Feedback — Food Tourism</h1>
+      <p class="guide">
+        0 - Rất tệ &nbsp;|&nbsp; 1 - Không hài lòng &nbsp;|&nbsp; 2 - Cần cải thiện &nbsp;|&nbsp; 3 - Hài lòng &nbsp;|&nbsp; 4 - Rất hài lòng &nbsp;|&nbsp; 5 - Vô cùng hài lòng
+      </p>
+
+      <form action="{{ url_for('submit') }}" method="POST" class="feedback-form">
+        <!-- === CÁC CÂU HỎI (Bạn có thể sửa text ở đây) === -->
+        <div class="q">
+          <label class="q-title">1) Bạn đánh giá trải nghiệm tổng thể của website như thế nào?</label>
+          <div class="radios">
+            {% for i in range(6) %}
+              <label class="radio"><input type="radio" name="q1" value="{{ i }}" required> {{ i }}</label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="q">
+          <label class="q-title">2) Nội dung (món ăn / nhà hàng) có hấp dẫn và phù hợp không?</label>
+          <div class="radios">
+            {% for i in range(6) %}
+              <label class="radio"><input type="radio" name="q2" value="{{ i }}" required> {{ i }}</label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="q">
+          <label class="q-title">3) Giao diện và bản đồ (map) có dễ sử dụng không?</label>
+          <div class="radios">
+            {% for i in range(6) %}
+              <label class="radio"><input type="radio" name="q3" value="{{ i }}" required> {{ i }}</label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="q">
+          <label class="q-title">4) Bạn có muốn quay lại / giới thiệu ứng dụng này cho người khác không?</label>
+          <div class="radios">
+            {% for i in range(6) %}
+              <label class="radio"><input type="radio" name="q4" value="{{ i }}" required> {{ i }}</label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="q">
+          <label class="q-title">Ghi chú thêm (những gì chúng tôi cần cải thiện):</label>
+          <textarea name="note" rows="4" placeholder="Viết góp ý của bạn ở đây..."></textarea>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-submit">Gửi phản hồi</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Mascot (transparent GIF) -->
+  <div class="mascot-wrap" title="Xin chào!">
+    <img src="{{ url_for('static', filename='img/animation-unscreen.gif') }}" alt="mascot">
+  </div>
+
+</body>
+</html>
