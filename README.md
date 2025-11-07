@@ -19,7 +19,7 @@
 
 ## II. Problem Decomposition
 
-- Nutrition value
+- Food Detection
 - Saving data system
 - Recommendation API
 - Pipeline
@@ -32,7 +32,7 @@
 | Task | Member in charge |
 |------|------------------|
 | Integrate map and routing API | Nguyễn Lê Hoàng Khải |
-| Food Dectection | Trần Lê Hoàng Gia |
+| Food Detection | Trần Lê Hoàng Gia |
 | Saving data system | Nguyễn Nhựt Huy |
 | Recommendation API | Vũ Duy Nhất |
 | Interface design for website | Trần Quang Minh Huy |
