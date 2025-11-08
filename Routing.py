@@ -1,91 +1,52 @@
-# ===========================================
-# routing.py
-# Hybrid Geocoding (Geoapify) + Routing (ORS)
-# ===========================================
-
 import requests
 import openrouteservice
 import json
-import re
 import os
 
-# =========================
-# 🔑 API Keys
-# =========================
-GEOAPIFY_API_KEY = "a4a65c593972426b833699a35d9aec01"
+GOONG_API_KEY = "lH4SZVZGpUOOUhv8VhnNcOu9xwkAjwKjIMtLvQXG"
 ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjhjMGQ3MWFhODc1MjRhNzJhNjg1YmYxNGI2ZjliNjU2IiwiaCI6Im11cm11cjY0In0="
 
-# =========================
-# ⚙️ Clients
-# =========================
 ors_client = openrouteservice.Client(key=ORS_API_KEY)
 
-# =========================
-# 🧩 Address Normalization
-# =========================
-def normalize_address(address: str) -> str:
-    """
-    Chuẩn hoá địa chỉ để tăng độ chính xác khi geocoding.
-    - Loại bỏ tiền tố, ký tự rác.
-    - Viết lại theo cấu trúc chuẩn cho Geoapify.
-    """
-    main_part = address.split(",")[0].strip()
-    number_match = re.match(r"(\d+)", main_part)
-    number = number_match.group(1) if number_match else ""
 
-    # Loại bỏ tiền tố “Đ.” hoặc “Đg.” → “Đường”
-    street_name = re.sub(r"^\d+[\/\d]*\s*", "", main_part).strip()
-    street_name = re.sub(r"^(Đ\.?|Đg\.?)\s*", "", street_name, flags=re.IGNORECASE).strip()
-
-    normalized = f"Hẻm {number} {street_name}, Ho Chi Minh City, Vietnam"
-    return normalized.strip()
-
-# =========================
-# 📍 Geocode via Geoapify
-# =========================
 def geocode_address(address: str):
     """
-    Lấy toạ độ từ địa chỉ thông qua Geoapify API.
-    Trả về (lon, lat)
+    Giải mã địa chỉ thành toạ độ (vĩ độ, kinh độ) bằng Goong.io API.
     """
-    normalized = normalize_address(address)
-    url = f"https://api.geoapify.com/v1/geocode/search?text={normalized}&apiKey={GEOAPIFY_API_KEY}"
+    url = "https://rsapi.goong.io/Geocode"
+    params = {"address": address, "api_key": GOONG_API_KEY}
+    res = requests.get(url, params=params)
+    data = res.json()
 
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise ConnectionError(f"Lỗi kết nối Geoapify: {response.status_code}")
+    if res.status_code != 200:
+        raise Exception(f"Lỗi kết nối Goong.io: {res.status_code}")
 
-    data = response.json()
-    features = data.get("features", [])
-    if not features:
+    if "results" in data and data["results"]:
+        loc = data["results"][0]["geometry"]["location"]
+        return (loc["lat"], loc["lng"])
+    else:
         raise ValueError(f"Không tìm thấy toạ độ cho địa chỉ: {address}")
 
-    lon = features[0]["geometry"]["coordinates"][0]
-    lat = features[0]["geometry"]["coordinates"][1]
-    return (lon, lat)
 
-# =========================
-# 🛣️ Route Calculation
-# =========================
-def get_route(user_lat, user_lon, dest_lat, dest_lon):
+def get_route(user_lat: float, user_lon: float, dest_lat: float, dest_lon: float):
     """
-    Tính đường đi giữa user và điểm đến (ORS Directions API)
+    Lấy tuyến đường được tính bởi OpenRouteService giữa hai điểm.
     """
-    coords = [(user_lon, user_lat), (dest_lon, dest_lat)]
-    route = ors_client.directions(
-        coordinates=coords,
-        profile="driving-car",
-        format="geojson"
-    )
-    return route["features"][0]["geometry"]["coordinates"]
+    try:
+        coords = [(user_lon, user_lat), (dest_lon, dest_lat)]  
+        route = ors_client.directions(
+            coordinates=coords,
+            profile="driving-car",
+            format="geojson"
+        )
+        return route["features"][0]["geometry"]["coordinates"]
+    except Exception as e:
+        raise Exception(f"Lỗi khi tính route bằng ORS: {e}")
 
-# =========================
-# 🧠 Preprocess Restaurants
-# =========================
-def preprocess_restaurants(user_lat, user_lon):
+
+def preprocess_restaurants(user_lat: float, user_lon: float):
     """
-    Geocode toàn bộ nhà hàng và tính sẵn tuyến đường.
-    Lưu ra file restaurants_preprocessed.json
+    Lưu dữ liệu định tuyến để truy cập, tránh gọi API nhiều lần.
     """
     input_path = "restaurants.json"
     output_path = "restaurants_preprocessed.json"
@@ -96,31 +57,31 @@ def preprocess_restaurants(user_lat, user_lon):
     with open(input_path, "r", encoding="utf-8") as f:
         restaurants = json.load(f)
 
+    processed = []
     for r in restaurants:
+        name = r.get("Name", r.get("Address", "Unknown"))
         try:
-            dest_coords = geocode_address(r["Address"])
-            route_coords = get_route(user_lat, user_lon, dest_coords[1], dest_coords[0])
+            dest_lat, dest_lon = geocode_address(r["Address"])
+            route_coords = get_route(user_lat, user_lon, dest_lat, dest_lon)
 
-            r["NormalizedAddress"] = normalize_address(r["Address"])
-            r["Coordinates"] = dest_coords
+            r["Coordinates"] = [dest_lat, dest_lon]
             r["Route"] = route_coords
 
-            name = r.get("Name", r.get("Address", "Unknown"))
-            print(f"✅ Xử lý: {name}")
+            print(f"✅ Xử lý thành công: {name}")
+            processed.append(r)
         except Exception as e:
-            name = r.get("Name", r.get("Address", "Unknown"))
             print(f"⚠️ Lỗi xử lý {name}: {e}")
-            continue
 
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(restaurants, f, ensure_ascii=False, indent=2)
+        json.dump(processed, f, ensure_ascii=False, indent=2)
 
     print(f"💾 Đã lưu dữ liệu vào {output_path}")
 
-# =========================
-# 🚀 Get route by index (API dùng)
-# =========================
+
 def get_routes_from_json(index: int):
+    """
+    Lấy dữ liệu tuyến đường đã preprocess từ file JSON.
+    """
     file_path = "restaurants_preprocessed.json"
     if not os.path.exists(file_path):
         raise FileNotFoundError("File dữ liệu đã preprocess không tồn tại. Hãy chạy preprocess_restaurants() trước.")
@@ -132,16 +93,9 @@ def get_routes_from_json(index: int):
         raise IndexError("Index không hợp lệ.")
 
     selected = restaurants[index]
-
-    # 🩵 Đảm bảo có key "Name"
-    name = selected.get("Name", selected.get("name", "Không rõ tên"))
-
-    route_data = {
-        "name": name,
-        "address": selected.get("NormalizedAddress", selected.get("Address", "")),
+    return {
+        "name": selected.get("Name", selected.get("Address", "Không rõ tên")),
+        "address": selected.get("Address", ""),
         "coordinates": selected.get("Coordinates", []),
         "route": selected.get("Route", []),
     }
-
-    return route_data
-
