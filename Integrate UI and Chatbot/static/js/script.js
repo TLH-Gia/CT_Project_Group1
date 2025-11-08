@@ -1,5 +1,39 @@
 import {sendQueryToGemini} from './gemini.js'
 
+const foodData = [
+    {
+        name: "Phở Bò Gánh",
+        location: "123 Đường ABC, Hà Nội",
+        description: "Phở truyền thống Việt Nam, nước dùng đậm đà.",
+        image: "images/pho_bo.jpg"
+    },
+    {
+        name: "Bún Chả Hương Liên",
+        location: "24 Lê Văn Hưu, Hà Nội",
+        description: "Bún chả thơm ngon với chả nướng và nước chấm đậm vị.",
+        image: "images/bun.jpg"
+    },
+    {
+        name: "Cơm Tấm Sài Gòn",
+        location: "56 Nguyễn Trãi, TP.HCM",
+        description: "Cơm tấm với sườn nướng và trứng ốp la hấp dẫn.",
+        image: "images/com_tam.jpg"
+    },
+    {
+        name: "Bánh Mì Phượng",
+        location: "2B Phan Chu Trinh, Đà Nẵng",
+        description: "Bánh mì giòn tan, pate thơm ngon và thịt nướng đậm vị.",
+        image: "images/banh_mi_thit.jpg"
+    },
+    {
+        name: "Chè Hẻm",
+        location: "37 Lê Thánh Tôn, TP.HCM",
+        description: "Các loại chè truyền thống, ngọt dịu và thanh mát.",
+        image: "images/che.jpg"
+    }
+];
+
+
 document.addEventListener('DOMContentLoaded', function () {
     // --- Logic for Food Modal on Homepage ---
     var foodModal = document.getElementById('foodModal');
@@ -74,8 +108,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Display bot response
     const botMessageDiv = document.createElement('div');
-    botMessageDiv.classList.add('message', 'bot-message');
-    botMessageDiv.innerHTML = `<p>${geminiText}</p>`;
+    botMessageDiv.classList.add('message', 'bot-message', 'd-flex', 'align-items-start');
+    botMessageDiv.innerHTML = `
+        <img src="/static/images/jane.jpg" class="bot-avatar" alt="Bot Avatar">
+        <p>${geminiText}</p>
+    `;
     chatWindow.appendChild(botMessageDiv);
 
     chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -87,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function () {
 const themeToggleBtn = document.getElementById("themeToggleBtn");
 const body = document.body;
 
-// Load trạng thái đã lưu
 if (localStorage.getItem("theme") === "dark") {
     body.classList.add("dark");
     themeToggleBtn.textContent = "🌞 Sáng";
@@ -100,3 +136,28 @@ themeToggleBtn.addEventListener("click", () => {
     themeToggleBtn.textContent = isDark ? "🌞 Sáng" : "🌙 Tối";
     localStorage.setItem("theme", isDark ? "dark" : "light");
 });
+
+const track = document.getElementById('food-track');
+
+function renderFoodCards(container, data) {
+    data.forEach(food => {
+        const card = document.createElement('div');
+        card.classList.add('card-food');
+        card.innerHTML = `
+            <img src="/static/${food.image}" alt="${food.name}">
+            <div class="food-info">
+                <h5 class="food-name">${food.name}</h5>
+                <p class="food-location">Địa chỉ: ${food.location}</p>
+                <p class="food-description">${food.description}</p>
+            </div>
+            <button class="location-btn">
+                <i class="fa-solid fa-location-dot"></i>
+            </button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+renderFoodCards(track, foodData);
+renderFoodCards(track, foodData); 
+
