@@ -35,34 +35,89 @@ const foodData = [
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    // --- Logic for Food Modal on Homepage ---
+// Initialize AOS for scroll animations
+    if (window.AOS) {
+        AOS.init({
+            duration: 700,
+            easing: 'ease-out-cubic',
+            once: true,
+            offset: 80
+        });
+    }
+
+    // Smooth scroll for hero CTA
+    document.querySelectorAll('.hero-cta').forEach(a => {
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
+    // --- Logic for Food Modal on Homepage (improved) ---
     var foodModal = document.getElementById('foodModal');
     if (foodModal) {
         foodModal.addEventListener('show.bs.modal', function (event) {
-            // Button that triggered the modal
-            var card = event.relatedTarget;
+           var card = event.relatedTarget;
+            if (!card) return;
 
-            // Extract info from data-* attributes
-            var name = card.getAttribute('data-name');
-            var description = card.getAttribute('data-description');
-            var location = card.getAttribute('data-location');
-            var price = card.getAttribute('data-price');
-            var image = card.getAttribute('data-image');
+            var name = card.getAttribute('data-name') || 'Không tên';
+            var description = card.getAttribute('data-description') || 'Không có mô tả';
+            var location = card.getAttribute('data-location') || '-';
+            var price = card.getAttribute('data-price') || '-';
+            var image = card.getAttribute('data-image') || '/static/images/placeholder-food.jpg';
 
-            // Update the modal's content
             var modalTitle = foodModal.querySelector('.modal-title');
             var modalImage = foodModal.querySelector('#modalFoodImage');
             var modalDescription = foodModal.querySelector('#modalFoodDescription');
             var modalLocation = foodModal.querySelector('#modalFoodLocation');
             var modalPrice = foodModal.querySelector('#modalFoodPrice');
+            var openMapBtn = foodModal.querySelector('#openMapBtn');
 
             modalTitle.textContent = name;
             modalImage.src = image;
             modalDescription.textContent = description;
             modalLocation.textContent = location;
             modalPrice.textContent = price;
+
+            // openMapBtn can link to map page with query params (simple)
+            openMapBtn.href = `/map?name=${encodeURIComponent(name)}&location=${encodeURIComponent(location)}`;
         });
     }
+    // --- Filter & Search (client-side simple) ---
+    const areaSelect = document.getElementById('areaSelect');
+    const searchInput = document.getElementById('searchInput');
+    const clearFilters = document.getElementById('clearFilters');
+    const foodsGrid = document.getElementById('foodsGrid');
+    const foodItems = Array.from(document.querySelectorAll('.food-item'));
+
+    function applyFilters() {
+        const area = (areaSelect?.value || 'all').toLowerCase();
+        const q = (searchInput?.value || '').trim().toLowerCase();
+
+        foodItems.forEach(item => {
+            const itemArea = (item.getAttribute('data-area') || '').toLowerCase();
+            const name = (item.getAttribute('data-name') || '').toLowerCase();
+            const matchArea = (area === 'all') || itemArea.includes(area);
+            const matchQuery = q === '' || name.includes(q);
+            item.style.display = (matchArea && matchQuery) ? '' : 'none';
+        });
+
+        // refresh AOS (if used)
+        if (window.AOS) AOS.refresh();
+    }
+
+    if (areaSelect) areaSelect.addEventListener('change', applyFilters);
+    if (searchInput) searchInput.addEventListener('input', () => {
+        // debounce quick
+        clearTimeout(window.__searchDeb);
+        window.__searchDeb = setTimeout(applyFilters, 200);
+    });
+    if (clearFilters) clearFilters.addEventListener('click', () => {
+        if (areaSelect) areaSelect.value = 'all';
+        if (searchInput) searchInput.value = '';
+        applyFilters();
+    });
 
     // --- Simple Chatbot UI Logic ---
     const sendMessageBtn = document.getElementById('sendMessageBtn');
@@ -118,24 +173,32 @@ document.addEventListener('DOMContentLoaded', function () {
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
+    // --- Theme toggle (dark mode) ---
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+        const body = document.body;
+        // === Theme initialization ===
+    const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") {
+        body.classList.add("dark");
+        if (themeToggleBtn) themeToggleBtn.textContent = "🌙 Tối";
+    } else {
+        body.classList.remove("dark");
+        if (themeToggleBtn) themeToggleBtn.textContent = "🌞 Sáng";
+    }
+
+
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", () => {
+            const isDark = body.classList.toggle("dark");
+            themeToggleBtn.textContent = isDark ? "🌙 Tối" : "🌞 Sáng";
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+            if (window.AOS) setTimeout(() => AOS.refresh(), 350);
+        });
+    }
 });
 
 
-const themeToggleBtn = document.getElementById("themeToggleBtn");
-const body = document.body;
 
-if (localStorage.getItem("theme") === "dark") {
-    body.classList.add("dark");
-    themeToggleBtn.textContent = "🌞 Sáng";
-}
-
-themeToggleBtn.addEventListener("click", () => {
-    body.classList.toggle("dark");
-    let isDark = body.classList.contains("dark");
-
-    themeToggleBtn.textContent = isDark ? "🌞 Sáng" : "🌙 Tối";
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-});
 
 const track = document.getElementById('food-track');
 

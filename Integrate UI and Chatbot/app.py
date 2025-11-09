@@ -11,21 +11,21 @@ foods = {
         'description': 'Phở là một món ăn truyền thống của Việt Nam, được xem là một trong những món ăn tiêu biểu cho ẩm thực Việt Nam. Thành phần chính của phở là bánh phở và nước dùng cùng với thịt bò hoặc gà cắt lát mỏng.',
         'location': 'Phở Thìn - 13 Lò Đúc, Hà Nội',
         'price': '50,000 - 70,000 VNĐ',
-        'image': 'images/pho.jpg'
+        'image': 'images/mainpage-display/pho.jpg'
     },
     'banh_mi': {
         'name': 'Bánh Mì',
         'description': 'Bánh mì Việt Nam là một loại bánh mì baguette được xẻ dọc, nhồi với thịt, πατέ, rau, và các loại nước sốt. Đây là một món ăn đường phố phổ biến và được yêu thích trên toàn thế giới.',
         'location': 'Bánh mì Phượng - 2B Phan Chu Trinh, Hội An',
         'price': '25,000 - 40,000 VNĐ',
-        'image': 'images/banh_mi.jpg'
+        'image': 'images/mainpage-display/banh_mi.jpg'
     },
     'bun_cha': {
         'name': 'Bún Chả',
         'description': 'Bún chả là một món ăn của Hà Nội, bao gồm bún, chả thịt lợn nướng trên than hoa và bát nước mắm chua cay mặn ngọt. Món ăn này thường được ăn kèm với các loại rau sống.',
         'location': 'Bún chả Hương Liên - 24 Lê Văn Hưu, Hà Nội',
         'price': '40,000 - 60,000 VNĐ',
-        'image': 'images/bun_cha.jpg'
+        'image': 'images/mainpage-display/bun_cha.jpg'
     }
 }
 
