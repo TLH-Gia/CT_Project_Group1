@@ -1,5 +1,5 @@
-
 import os
+
 os.environ["GRPC_VERBOSITY"] = "NONE"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -17,6 +17,7 @@ Quantity = 5
 
 genai.configure(api_key=GOOGLE_API)
 
+
 def geminiNLP(prompt):
     with open("RestaurantFormat.txt", "r", encoding="utf-8") as f:
         cat_file = f.read()
@@ -30,15 +31,15 @@ def geminiNLP(prompt):
     )
 
     schema = glm.Schema(
-        type = glm.Type.ARRAY,
-        items = glm.Schema(
-            type = glm.Type.OBJECT,
-            properties = {
-                "Categories": glm.Schema(type = glm.Type.STRING),
-                "Location": glm.Schema(type = glm.Type.STRING),
-                "Mapped": glm.Schema(type = glm.Type.STRING),
+        type=glm.Type.ARRAY,
+        items=glm.Schema(
+            type=glm.Type.OBJECT,
+            properties={
+                "Categories": glm.Schema(type=glm.Type.STRING),
+                "Location": glm.Schema(type=glm.Type.STRING),
+                "Mapped": glm.Schema(type=glm.Type.STRING),
             },
-            required = ["Categories", "Location", "Mapped"]
+            required=["Categories", "Location", "Mapped"]
         )
     )
 
@@ -52,37 +53,38 @@ def geminiNLP(prompt):
         }
     )
     try:
-        data = json.loads(response.text)  
+        data = json.loads(response.text)
         return data
     except json.JSONDecodeError:
         print("Lỗi: response không phải JSON hợp lệ")
         return None
-    
-def bboxForLocation(location = "Quận 7, TP.HCM"):
+
+
+def bboxForLocation(location="Quận 7, TP.HCM"):
     url = "https://nominatim.openstreetmap.org/search"
 
     params = {
-        "q":location,
-        "polygon_geojson":1,
-        "format":"json"
+        "q": location,
+        "polygon_geojson": 1,
+        "format": "json"
     }
     headers = CaseInsensitiveDict()
     headers["Accept"] = "application/json"
     headers["User-Agent"] = "Mozilla/5.0 (compatible; myapp/1.0; +https://example.com)"
-    resp = requests.get(url,params = params, headers=headers)
+    resp = requests.get(url, params=params, headers=headers)
 
     data = resp.json()[0]["boundingbox"]
 
     south = float(data[0])
     north = float(data[1])
-    west  = float(data[2])
-    east  = float(data[3]) 
-    
+    west = float(data[2])
+    east = float(data[3])
+
     bbox = f"{west},{south},{east},{north}"
     return bbox
 
 
-def restaurantForLocation(bbox, Categories = "catering", keyword=None):
+def restaurantForLocation(bbox, Categories="catering", keyword=None):
     base_url = "https://api.geoapify.com/v2/places"
 
     params = {
@@ -91,35 +93,35 @@ def restaurantForLocation(bbox, Categories = "catering", keyword=None):
         "filter": f"rect:{bbox}",
     }
 
-   
     if Categories:
         params["categories"] = Categories
 
-   
     if keyword:
         params["text"] = keyword
 
     resp = requests.get(base_url, params=params)
     return resp.json()
 
+
 def writeCSV(RestaurantList):
-    with open("Restaurant.csv", "w",newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file,fieldnames = ["Name","Address","OpeningTime","Cuisine"])
+    with open("Restaurant.csv", "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=["Name", "Address", "OpeningTime", "Cuisine"])
         writer.writeheader()
         for i in RestaurantList:
             writer.writerow(i)
+
 
 def writeJSON(RestaurantList):
     with open("Restaurant.json", "w", encoding="utf-8") as file:
         json.dump(RestaurantList, file, ensure_ascii=False, indent=4)
 
-def main():
 
+def main():
     prompt = input("Enter a prompt: ")
     dictionary = geminiNLP(prompt)
 
     bbox = bboxForLocation(dictionary[0]["Location"])
-    data = restaurantForLocation(bbox,dictionary[0]["Mapped"],dictionary[0]["Categories"])
+    data = restaurantForLocation(bbox, dictionary[0]["Mapped"], dictionary[0]["Categories"])
 
     RestaurantList = []
 
