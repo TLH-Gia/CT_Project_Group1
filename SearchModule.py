@@ -7,12 +7,15 @@ import requests
 from requests.structures import CaseInsensitiveDict
 import google.generativeai as genai
 import google.ai.generativelanguage as glm
-import json
 
+import json
 import csv
 
-GEOAPIFY_API = "6acea9c6e94c44b8bd8544b5eb6958d0"
-GOOGLE_API = "AIzaSyAhKuIN-FeamhtfmGJc5VQ0T-vCnfttSmg"
+from dotenv import load_dotenv
+
+load_dotenv()
+GEOAPIFY_API = os.getenv("GEOAPIFY_API")
+GOOGLE_API = os.getenv("GOOGLE_API")
 Quantity = 5
 
 genai.configure(api_key=GOOGLE_API)
