@@ -124,7 +124,7 @@ body.dark #themeToggleBtn {
 }
 
 .carousel {
-    height: 60vh;
+    height: 55vh;
     width: 100%;
     overflow: hidden;
     position: relative;
@@ -173,7 +173,7 @@ body.dark #themeToggleBtn {
 }
 
 .card-food .food-location,
-.card-food .food-description {
+.card-food .food-description, .food-open-time, .cuisine {
     margin: 0.2em 0;
     font-size: 0.95rem;
     color: #555;
@@ -208,3 +208,36 @@ body.dark #themeToggleBtn {
         transform: translateY(-50%); /* -50% = chiều cao tổng của nửa danh sách (clone) */
     }
 }
+
+/* Container nút: căn giữa */
+.carousel-buttons {
+    display: flex;
+    justify-content: center;   /* căn giữa ngang */
+    gap: 20px;                /* khoảng cách giữa 2 nút */
+    margin-top: 10px;         /* khoảng cách so với carousel */
+}
+
+/* Nút tròn */
+.carousel-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-btn:hover {
+    background-color: rgba(0,0,0,0.8);
+}
+
+.paused {
+    animation-play-state: paused;
+}
+
+

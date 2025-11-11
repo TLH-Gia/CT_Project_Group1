@@ -1,41 +1,51 @@
-import {sendQueryToGemini} from './gemini.js'
+// import {sendQueryToGemini} from './gemini.js'
 
 const foodData = [
     {
         name: "Phở Bò Gánh",
         location: "123 Đường ABC, Hà Nội",
         description: "Phở truyền thống Việt Nam, nước dùng đậm đà.",
-        image: "images/pho_bo.jpg"
+        image: "images/pho_bo.jpg",
+        open: "Mo-Su 10:00-21:00",
+        cuisine: "vietnamese"
     },
     {
         name: "Bún Chả Hương Liên",
         location: "24 Lê Văn Hưu, Hà Nội",
         description: "Bún chả thơm ngon với chả nướng và nước chấm đậm vị.",
-        image: "images/bun.jpg"
+        image: "images/bun.jpg",
+        open: "Mo-Su 10:00-21:00",
+        cuisine: "vietnamese"
     },
     {
         name: "Cơm Tấm Sài Gòn",
         location: "56 Nguyễn Trãi, TP.HCM",
         description: "Cơm tấm với sườn nướng và trứng ốp la hấp dẫn.",
-        image: "images/com_tam.jpg"
+        image: "images/com_tam.jpg",
+        open: "Mo-Su 10:00-21:00",
+        cuisine: "vietnamese"
     },
     {
         name: "Bánh Mì Phượng",
         location: "2B Phan Chu Trinh, Đà Nẵng",
         description: "Bánh mì giòn tan, pate thơm ngon và thịt nướng đậm vị.",
-        image: "images/banh_mi_thit.jpg"
+        image: "images/banh_mi_thit.jpg",
+        open: "Mo-Su 10:00-21:00",
+        cuisine: "vietnamese"
     },
     {
         name: "Chè Hẻm",
         location: "37 Lê Thánh Tôn, TP.HCM",
         description: "Các loại chè truyền thống, ngọt dịu và thanh mát.",
-        image: "images/che.jpg"
+        image: "images/che.jpg",
+        open: "Mo-Su 10:00-21:00",
+        cuisine: "vietnamese"
     }
 ];
 
 
 document.addEventListener('DOMContentLoaded', function () {
-// Initialize AOS for scroll animations
+    // Initialize AOS for scroll animations
     if (window.AOS) {
         AOS.init({
             duration: 700,
@@ -156,7 +166,38 @@ document.addEventListener('DOMContentLoaded', function () {
     chatWindow.scrollTop = chatWindow.scrollHeight;
 
     // Call Gemini API
-    const geminiText = await sendQueryToGemini(messageText);
+    // 3. GỌI API BACKEND (thay vì gọi gemini.js)
+    let botText = ""; // Biến để lưu tin nhắn trả lời
+    try {
+        // Gửi yêu cầu POST đến endpoint /api/chat của Flask
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // Gửi tin nhắn dưới dạng JSON
+            body: JSON.stringify({ message: messageText }) 
+        });
+
+        if (!response.ok) {
+            // Xử lý lỗi nếu server trả về 4xx, 5xx
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Nhận dữ liệu JSON trả về
+        const data = await response.json();
+        
+        // Lấy nội dung trả lời từ key 'reply' (đã định nghĩa trong app.py)
+        botText = data.reply; 
+
+        // RẤT QUAN TRỌNG: Thay thế ký tự xuống dòng (\n) bằng thẻ <br>
+        // để chúng hiển thị đúng trong HTML
+        botText = botText.replace(/\n/g, '<br>');
+
+    } catch (err) {
+        console.error("Lỗi khi gọi API:", err);
+        botText = "Xin lỗi, hệ thống đang gặp sự cố. Bạn vui lòng thử lại sau.";
+    }
 
     // Remove loading bubble
     loadingDiv.remove();
@@ -166,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
     botMessageDiv.classList.add('message', 'bot-message', 'd-flex', 'align-items-start');
     botMessageDiv.innerHTML = `
         <img src="/static/images/jane.jpg" class="bot-avatar" alt="Bot Avatar">
-        <p>${geminiText}</p>
+        <p>${botText}</p>
     `;
     chatWindow.appendChild(botMessageDiv);
 
@@ -195,13 +236,35 @@ document.addEventListener('DOMContentLoaded', function () {
             if (window.AOS) setTimeout(() => AOS.refresh(), 350);
         });
     }
+
+    document.querySelectorAll('.location-dot').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+
+            const lat = parseFloat(this.getAttribute('data-lat'));
+            const lng = parseFloat(this.getAttribute('data-lng'));
+
+            const modalEl = document.getElementById('mapModal');
+            const mapModal = new bootstrap.Modal(modalEl);
+            mapModal.show();
+
+            modalEl.addEventListener('shown.bs.modal', function () {
+                if (!window.map) {
+                    window.map = L.map('mapContainer').setView([lat, lng], 16);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(window.map);
+                    window.marker = L.marker([lat, lng]).addTo(window.map);
+                } else {
+                    window.map.setView([lat, lng], 16);
+                    window.marker.setLatLng([lat, lng]);
+                    window.map.invalidateSize();
+                }
+            }, { once: true });
+        });
+    });
+
+    
 });
 
-
-
-
 const track = document.getElementById('food-track');
-
 function renderFoodCards(container, data) {
     data.forEach(food => {
         const card = document.createElement('div');
@@ -212,15 +275,93 @@ function renderFoodCards(container, data) {
                 <h5 class="food-name">${food.name}</h5>
                 <p class="food-location">Địa chỉ: ${food.location}</p>
                 <p class="food-description">${food.description}</p>
+                <p class="food-open-time">Giờ mở cửa: ${food.open}</p>
+                <p class="cuisine">Ẩm thực: ${food.cuisine}</p>
             </div>
-            <button class="location-btn">
+            <button class="location-btn location-dot"
+                    title="Xem trên bản đồ" 
+                    data-lat="10.780615" 
+                    data-lng="106.695574"
+                    data-name="${food.name}"
+                    data-description="${food.description}"
+                    data-location="${food.location}"
+                    data-image="/static/${food.image}">
                 <i class="fa-solid fa-location-dot"></i>
             </button>
         `;
         container.appendChild(card);
     });
+
+    // --- Gắn listener sau khi tạo card ---
+    container.querySelectorAll('.location-dot').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const lat = parseFloat(this.getAttribute('data-lat'));
+            const lng = parseFloat(this.getAttribute('data-lng'));
+            const modalEl = document.getElementById('mapModal');
+            const mapModal = new bootstrap.Modal(modalEl);
+
+            // Update modal nội dung
+            const foodModal = modalEl;
+            const modalTitle = foodModal.querySelector('.modal-title');
+            const modalImage = foodModal.querySelector('#modalFoodImage');
+            const modalDescription = foodModal.querySelector('#modalFoodDescription');
+            const modalLocation = foodModal.querySelector('#modalFoodLocation');
+
+            modalTitle.textContent = this.dataset.name;
+            modalImage.src = this.dataset.image;
+            modalDescription.textContent = this.dataset.description;
+            modalLocation.textContent = this.dataset.location;
+
+            mapModal.show();
+
+            modalEl.addEventListener('shown.bs.modal', function () {
+                if (!window.map) {
+                    window.map = L.map('mapContainer').setView([lat, lng], 16);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(window.map);
+                    window.marker = L.marker([lat, lng]).addTo(window.map);
+                } else {
+                    window.map.setView([lat, lng], 16);
+                    window.marker.setLatLng([lat, lng]);
+                    window.map.invalidateSize();
+                }
+            }, { once: true });
+        });
+    });
 }
-
 renderFoodCards(track, foodData);
-renderFoodCards(track, foodData); 
+renderFoodCards(track, foodData);
 
+const pauseBtn = document.querySelector('.pause');
+const restartBtn = document.querySelector('.restart');
+
+pauseBtn.addEventListener('click', () => {
+    // Kiểm tra animation đang paused hay chưa
+    const isPaused = track.classList.toggle('paused'); // toggle trả về true nếu vừa add class
+
+    // Thay đổi icon
+    if (isPaused) {
+        // Nếu paused → hiển thị icon play
+        pauseBtn.innerHTML = '<i class="fa-regular fa-square-caret-right"></i>';
+    } else {
+        // Nếu đang chạy → hiển thị icon pause
+        pauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    }
+});
+
+const fastBtn = document.querySelector('.fast');
+
+let isFast = false; // trạng thái fast forward
+
+fastBtn.addEventListener('click', () => {
+    isFast = !isFast; // toggle trạng thái
+
+    if (isFast) {
+        // tua nhanh 1.5x → giảm duration xuống 2/3
+        track.style.animationDuration = '5s'; // ví dụ gốc 10s / 1.5
+        fastBtn.style.backgroundColor = 'rgba(255, 165, 0, 0.7)'; // highlight nút (tuỳ chọn)
+    } else {
+        // trở về tốc độ bình thường
+        track.style.animationDuration = '20s'; 
+        fastBtn.style.backgroundColor = ''; // reset
+    }
+});

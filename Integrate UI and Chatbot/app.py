@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
+import SearchModule
 
 # Khởi tạo ứng dụng Flask
 app = Flask(__name__)
@@ -60,6 +61,44 @@ def about_page():
     Hiển thị trang giới thiệu dự án.
     """
     return render_template('about.html')
+
+
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    """
+    Nhận tin nhắn từ JavaScript, gọi SearchModule, và trả về kết quả.
+    """
+    try:
+        # 1. Nhận dữ liệu JSON từ request
+        data = request.get_json()
+        user_message = data.get('message')
+
+        if not user_message:
+            return jsonify({'error': 'No message provided'}), 400
+
+        # 2. Gọi hàm logic từ SearchModule
+        restaurant_list = SearchModule.restaurantSuggest(user_message)
+
+        # 3. Định dạng kết quả trả về
+        if not restaurant_list:
+            response_text = "Xin lỗi, mình không tìm thấy nhà hàng nào phù hợp với yêu cầu của bạn. Bạn thử tìm ở khu vực khác xem?"
+        else:
+            # Biến danh sách nhà hàng thành một chuỗi văn bản đẹp
+            response_text = "Mình tìm thấy vài gợi ý cho bạn nè:\n\n"
+            for r in restaurant_list:
+                # Dùng **để in đậm (Markdown)
+                response_text += f"{r['Name']}\n" 
+                response_text += f"Địa chỉ: {r['Address']}\n"
+                response_text += f"Giờ mở cửa: {r['OpeningTime']}\n"
+                response_text += f"Ẩm thực: {r['Cuisine']}\n\n"
+        
+        # 4. Trả về kết quả dạng JSON
+        # JavaScript của bạn sẽ nhận được {'reply': response_text}
+        return jsonify({'reply': response_text})
+
+    except Exception as e:
+        print(f"Lỗi tại /api/chat: {e}")
+        return jsonify({'error': str(e)}), 500
 
 # Chạy ứng dụng
 if __name__ == '__main__':
