@@ -21,7 +21,7 @@ Quantity = 5
 genai.configure(api_key=GOOGLE_API)
 
 def geminiNLP(prompt):
-    with open("RestaurantFormat.txt", "r", encoding="utf-8") as f:
+    with open("Integrate UI and Chatbot\RestaurantFormat.txt", "r", encoding="utf-8") as f:
         cat_file = f.read()
 
     system_context = (
@@ -116,6 +116,32 @@ def writeJSON(RestaurantList):
     with open("Restaurant.json", "w", encoding="utf-8") as file:
         json.dump(RestaurantList, file, ensure_ascii=False, indent=4)
 
+def restaurantSuggest(prompt):
+    dictionary = geminiNLP(prompt)
+
+    bbox = bboxForLocation(dictionary[0]["Location"])
+    data = restaurantForLocation(bbox,dictionary[0]["Mapped"],dictionary[0]["Categories"])
+
+    RestaurantList = []
+
+    for i in data["features"]:
+        props = i["properties"]
+
+        if "catering" in props and "cuisine" in props["catering"]:
+            cuisine = props["catering"]["cuisine"]
+        elif "datasource" in props and "raw" in props["datasource"] and "cuisine" in props["datasource"]["raw"]:
+            cuisine = props["datasource"]["raw"]["cuisine"]
+        else:
+            cuisine = None
+
+        RestaurantList.append({
+            "Name": props.get("name"),
+            "Address": props.get("address_line2"),
+            "OpeningTime": props.get("opening_hours"),
+            "Cuisine": cuisine
+        })
+    return RestaurantList
+
 def main():
 
     prompt = input("Enter a prompt: ")
@@ -153,5 +179,5 @@ def main():
     # writeJSON(RestaurantList)
     # writeCSV(RestaurantList)
 
-
-main()
+if __name__ == "__main__":
+    main()
