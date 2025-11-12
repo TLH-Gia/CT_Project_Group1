@@ -2,44 +2,44 @@
 
 const foodData = [
     {
-        name: "Phở Bò Gánh",
-        location: "123 Đường ABC, Hà Nội",
-        description: "Phở truyền thống Việt Nam, nước dùng đậm đà.",
-        image: "images/pho_bo.jpg",
-        open: "Mo-Su 10:00-21:00",
-        cuisine: "vietnamese"
+        Name: "Phở Bò Gánh",
+        Address: "123 Đường ABC, Hà Nội",
+        Description: "Phở truyền thống Việt Nam, nước dùng đậm đà.",
+        Image: "images/pho_bo.jpg",
+        OpeningTime: "Mo-Su 10:00-21:00",
+        Cuisine: "vietnamese"
     },
     {
-        name: "Bún Chả Hương Liên",
-        location: "24 Lê Văn Hưu, Hà Nội",
-        description: "Bún chả thơm ngon với chả nướng và nước chấm đậm vị.",
-        image: "images/bun.jpg",
-        open: "Mo-Su 10:00-21:00",
-        cuisine: "vietnamese"
+        Name: "Bún Chả Hương Liên",
+        Address: "24 Lê Văn Hưu, Hà Nội",
+        Description: "Bún chả thơm ngon với chả nướng và nước chấm đậm vị.",
+        Image: "images/bun.jpg",
+        OpeningTime: "Mo-Su 10:00-21:00",
+        Cuisine: "vietnamese"
     },
     {
-        name: "Cơm Tấm Sài Gòn",
-        location: "56 Nguyễn Trãi, TP.HCM",
-        description: "Cơm tấm với sườn nướng và trứng ốp la hấp dẫn.",
-        image: "images/com_tam.jpg",
-        open: "Mo-Su 10:00-21:00",
-        cuisine: "vietnamese"
+        Name: "Cơm Tấm Sài Gòn",
+        Address: "56 Nguyễn Trãi, TP.HCM",
+        Description: "Cơm tấm với sườn nướng và trứng ốp la hấp dẫn.",
+        Image: "images/com_tam.jpg",
+        OpeningTime: "Mo-Su 10:00-21:00",
+        Cuisine: "vietnamese"
     },
     {
-        name: "Bánh Mì Phượng",
-        location: "2B Phan Chu Trinh, Đà Nẵng",
-        description: "Bánh mì giòn tan, pate thơm ngon và thịt nướng đậm vị.",
-        image: "images/banh_mi_thit.jpg",
-        open: "Mo-Su 10:00-21:00",
-        cuisine: "vietnamese"
+        Name: "Bánh Mì Phượng",
+        Address: "2B Phan Chu Trinh, Đà Nẵng",
+        Description: "Bánh mì giòn tan, pate thơm ngon và thịt nướng đậm vị.",
+        Image: "images/banh_mi_thit.jpg",
+        OpeningTime: "Mo-Su 10:00-21:00",
+        Cuisine: "vietnamese"
     },
     {
-        name: "Chè Hẻm",
-        location: "37 Lê Thánh Tôn, TP.HCM",
-        description: "Các loại chè truyền thống, ngọt dịu và thanh mát.",
-        image: "images/che.jpg",
-        open: "Mo-Su 10:00-21:00",
-        cuisine: "vietnamese"
+        Name: "Chè Hẻm",
+        Address: "37 Lê Thánh Tôn, TP.HCM",
+        Description: "Các loại chè truyền thống, ngọt dịu và thanh mát.",
+        Image: "images/che.jpg",
+        OpeningTime: "Mo-Su 10:00-21:00",
+        Cuisine: "vietnamese"
     }
 ];
 
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
     async function sendMessage() {
     const messageText = userInput.value.trim();
     if (messageText === '') return;
-    
+
     // Display user message
     const userMessageDiv = document.createElement('div');
     userMessageDiv.classList.add('message', 'user-message');
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Content-Type': 'application/json'
             },
             // Gửi tin nhắn dưới dạng JSON
-            body: JSON.stringify({ message: messageText }) 
+            body: JSON.stringify({ message: messageText })
         });
 
         if (!response.ok) {
@@ -186,13 +186,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Nhận dữ liệu JSON trả về
         const data = await response.json();
-        
+        console.log("DEBUG: toàn bộ data nhận về từ API:", data);
+
         // Lấy nội dung trả lời từ key 'reply' (đã định nghĩa trong app.py)
-        botText = data.reply; 
+        // botText = data.reply;
+        botText = "Đây là một vài đề xuất phù hợp với yêu cầu của bạn!"
+
 
         // RẤT QUAN TRỌNG: Thay thế ký tự xuống dòng (\n) bằng thẻ <br>
         // để chúng hiển thị đúng trong HTML
-        botText = botText.replace(/\n/g, '<br>');
+        // botText = botText.replace(/\n/g, '<br>');
+        updateFoodModal(data.food_data);
+
 
     } catch (err) {
         console.error("Lỗi khi gọi API:", err);
@@ -261,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    
+
 });
 
 const track = document.getElementById('food-track');
@@ -270,22 +275,22 @@ function renderFoodCards(container, data) {
         const card = document.createElement('div');
         card.classList.add('card-food');
         card.innerHTML = `
-            <img src="/static/${food.image}" alt="${food.name}">
+            <img src="/static/${food.Image}" alt="${food.Name}">
             <div class="food-info">
-                <h5 class="food-name">${food.name}</h5>
-                <p class="food-location">Địa chỉ: ${food.location}</p>
-                <p class="food-description">${food.description}</p>
-                <p class="food-open-time">Giờ mở cửa: ${food.open}</p>
-                <p class="cuisine">Ẩm thực: ${food.cuisine}</p>
+                <h5 class="food-name">${food.Name}</h5>
+                <p class="food-location">Địa chỉ: ${food.Address}</p>
+                <p class="food-description">${food.Description}</p>
+                <p class="food-open-time">Giờ mở cửa: ${food.OpeningTime}</p>
+                <p class="cuisine">Ẩm thực: ${food.Cuisine}</p>
             </div>
             <button class="location-btn location-dot"
-                    title="Xem trên bản đồ" 
-                    data-lat="10.780615" 
+                    title="Xem trên bản đồ"
+                    data-lat="10.780615"
                     data-lng="106.695574"
-                    data-name="${food.name}"
-                    data-description="${food.description}"
-                    data-location="${food.location}"
-                    data-image="/static/${food.image}">
+                    data-name="${food.Name}"
+                    data-description="${food.Description}"
+                    data-location="${food.Address}"
+                    data-image="/static/${food.Image}">
                 <i class="fa-solid fa-location-dot"></i>
             </button>
         `;
@@ -361,7 +366,74 @@ fastBtn.addEventListener('click', () => {
         fastBtn.style.backgroundColor = 'rgba(255, 165, 0, 0.7)'; // highlight nút (tuỳ chọn)
     } else {
         // trở về tốc độ bình thường
-        track.style.animationDuration = '20s'; 
+        track.style.animationDuration = '20s';
         fastBtn.style.backgroundColor = ''; // reset
     }
+});
+
+
+// === CẬP NHẬT FOOD MODAL ===
+function updateFoodModal(dataArray) {
+    // Lấy tất cả thẻ card hiện có trong modal
+    const cards = document.querySelectorAll('.card-food');
+
+    if (!cards || cards.length === 0) {
+        console.warn("Không có thẻ card-food nào để cập nhật.");
+        return;
+    }
+
+    if (!dataArray || dataArray.length === 0) {
+    console.warn("Dữ liệu cập nhật rỗng, không thể ghi đè modal.");
+    return;
+}
+    // Nếu số dữ liệu ít hơn số card → lặp lại dữ liệu cho đủ
+    const totalCards = cards.length;
+    const totalData = dataArray.length;
+    const repeatedData = [];
+
+    for (let i = 0; i < totalCards; i++) {
+        repeatedData.push(dataArray[i % totalData]);
+    }
+
+    // Ghi đè nội dung từng card theo dữ liệu mới
+    cards.forEach((card, index) => {
+        const food = repeatedData[index];
+        const img = card.querySelector('img');
+        const name = card.querySelector('.food-name');
+        const location = card.querySelector('.food-location');
+        const description = card.querySelector('.food-description');
+        const openTime = card.querySelector('.food-open-time');
+        const cuisine = card.querySelector('.cuisine');
+        const button = card.querySelector('.location-btn');
+
+        // Xử lý ảnh: nếu food.image không tồn tại, dùng ảnh mặc định
+        const imageSrc = food && food.Image ? `/static/${food.Image}` : '/static/images/default_food.jpg';
+
+        if (img) {
+            img.src = imageSrc;
+            img.alt = food.Name || "Ẩm thực";
+        }
+        if (name) name.textContent = food.Name || "Tên chưa có";
+        if (location) location.textContent = `Địa chỉ: ${food.Address || "Chưa có địa chỉ"}`;
+        if (description) description.textContent = food.Description || "Không có mô tả";
+        if (openTime) openTime.textContent = `Giờ mở cửa: ${food.OpeningTime || "Chưa có giờ mở cửa"}`;
+        if (cuisine) cuisine.textContent = `Ẩm thực: ${food.Cuisine || "Chưa rõ"}`;
+
+        if (button) {
+            button.dataset.name = food.Name || "";
+            button.dataset.description = food.Description || "";
+            button.dataset.location = food.Address || "";
+            button.dataset.image = imageSrc;
+        }
+    });
+
+
+    console.log(`✅ Đã cập nhật ${totalCards} card với ${totalData} dữ liệu (ghi đè lặp lại nếu thiếu).`);
+}
+
+
+// === SỰ KIỆN NÚT RELOAD ===
+const reloadBtn = document.querySelector('.restart');
+reloadBtn.addEventListener("click", () => {
+  updateFoodModal(foodData);
 });

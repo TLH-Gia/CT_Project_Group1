@@ -85,16 +85,19 @@ def api_chat():
         else:
             # Biến danh sách nhà hàng thành một chuỗi văn bản đẹp
             response_text = "Mình tìm thấy vài gợi ý cho bạn nè:\n\n"
+            print(restaurant_list)
             for r in restaurant_list:
                 # Dùng **để in đậm (Markdown)
                 response_text += f"{r['Name']}\n" 
                 response_text += f"Địa chỉ: {r['Address']}\n"
                 response_text += f"Giờ mở cửa: {r['OpeningTime']}\n"
                 response_text += f"Ẩm thực: {r['Cuisine']}\n\n"
-        
+
         # 4. Trả về kết quả dạng JSON
         # JavaScript của bạn sẽ nhận được {'reply': response_text}
-        return jsonify({'reply': response_text})
+        response = {"food_data": restaurant_list}
+        print("JSON response:", response)  # Debug trước khi jsonify
+        return jsonify(response)
 
     except Exception as e:
         print(f"Lỗi tại /api/chat: {e}")
