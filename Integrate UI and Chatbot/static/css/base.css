@@ -14,36 +14,44 @@ body {
     padding-top: 72px; /* Height of the fixed navbar */
     background: linear-gradient(135deg, #c0fdfb, #ffb347);
     min-height: 100vh;
-    font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Verdana', 'Segoe UI', sans-serif;
     transition: background 0.35s ease, color 0.35s ease;
     -webkit-font-smoothing: antialiased;
 }
 
 /* NAVBAR */
 .navbar {
-  background: rgba(40, 40, 40, 0.75);
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(8px);
   transition: background 0.3s ease;
-  padding-top: 0.85rem;   /* mặc định bootstrap khoảng 0.5rem */
-  padding-bottom: 0.85rem;
 }
 .navbar .nav-link {
-  color: #fff;
+  color: black;
   transition: color 0.2s;
 }
+
 .navbar .nav-link:hover {
   color: var(--brand-secondary);
 }
-.brand-title { font-weight: 600; font-size: 0.95rem; }
+
+.brand-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: black;
+    transition: color 0.2s;
+}
+
+.brand-title:hover{
+  color: var(--brand-secondary);
+}
 
 .brand-logo {
-  height: 34px;              /* giữ chiều cao nav */
-  transform: scale(4.2);       /* tăng lên 2x, có thể đổi thành 2.2, 2.5, tùy bạn */
-  transform-origin: left center; /* phóng từ phía chữ để không lệch */
-  margin-right: 100px;         /* canh khoảng cách chữ */
-  margin-bottom: 5px;
-  margin-top: 5px;
-  display: block;            /* tránh bị lệch line-height */
+    height: 48px;                 /* chiều cao logo */
+    width: auto;                   /* giữ tỉ lệ */
+    margin-bottom: 4px;            /* khoảng cách với text */
+    display: block;
 }
 
 .footer {

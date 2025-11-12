@@ -135,3 +135,57 @@ body.dark .filter-bar {
     background: white;
 }
 
+#themeToggleBtn{
+  color: black;
+  border-color: black;
+}
+
+/* 1. Đổi màu chữ 'Giá' và các text phụ (đang dùng class .text-muted) */
+body.dark .text-muted {
+    color: #d1d1d1 !important; /* Chuyển thành màu xám sáng dễ đọc trên nền đen */
+}
+
+/* 2. Đổi màu nút Icon bản đồ (đang dùng .btn-outline-secondary) */
+body.dark .btn-outline-secondary {
+    color: #ffffff;          /* Icon và chữ màu trắng */
+    border-color: #a0a0a0;   /* Viền màu xám sáng */
+}
+
+/* Hiệu ứng khi di chuột vào nút bản đồ trong Dark Mode */
+body.dark .btn-outline-secondary:hover {
+    background-color: #ffffff;
+    color: #000000;          /* Nền trắng, icon đen */
+    border-color: #ffffff;
+}
+
+/* 3. Cập nhật màu nền Card */
+body.dark .card {
+    background-color: #2b2b2b; /* Nền thẻ chuyển sang xám đậm */
+    border-color: #444;        /* Viền thẻ nhạt hơn chút */
+    color: #fff;               /* Chữ mặc định màu trắng */
+}
+
+/* 4. Xử lý tiêu đề trên ảnh (Card Overlay) */
+body.dark .card-overlay .overlay-text h5 {
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* Thêm bóng đổ chữ để nổi bật hơn */
+}
+
+/* 5. Fix lại nút "Xóa" bộ lọc trong Dark Mode */
+body.dark #clearFilters {
+    color: #fff;
+    background: #444; /* Nền tối hơn */
+    border: 1px solid #666;
+}
+body.dark #clearFilters:hover {
+    background: #555;
+}
+
+/* 6. Fix lại nút Theme Toggle trong Dark Mode */
+body.dark #themeToggleBtn {
+    color: #fff;
+    border-color: #fff;
+}
+body.dark .modal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}

@@ -1,7 +1,7 @@
 // ✅ Load Gemini SDK từ CDN (frontend mode)
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-const geminiApiKey = "AIzaSyD1XS5a3Sl1Ng8PTkVdw5AxTiH5VhGryq0"; // 🔥 Thay API Key vào đây trực tiếp
+const geminiApiKey = "AIzaSyD1XS5a3Sl1Ng8PTkVdw5AxTiH5VhGryq0";
 
 const genAI = new GoogleGenerativeAI(geminiApiKey);
 

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import SearchModule
+import Routing
 
 # Khởi tạo ứng dụng Flask
 app = Flask(__name__)
@@ -100,6 +101,59 @@ def api_chat():
         print(f"Lỗi tại /api/chat: {e}")
         return jsonify({'error': str(e)}), 500
 
-# Chạy ứng dụng
+@app.route('/api/find_path', methods=['POST'])
+def find_path():
+    data = request.get_json()
+    origin_text = data.get('origin')       # Địa chỉ người dùng nhập
+    destination_text = data.get('destination') # Địa chỉ quán ăn (lấy từ nút bấm)
+
+    if not origin_text or not destination_text:
+        return jsonify({'error': 'Thiếu địa chỉ đi hoặc đến'}), 400
+
+    try:
+        # 1. Chuyển đổi địa chỉ sang tọa độ (Geocoding)
+        # (Dùng hàm geocode_address trong Routing.py của bạn)
+        user_lat, user_lon = Routing.geocode_address(origin_text)
+        dest_lat, dest_lon = Routing.geocode_address(destination_text)
+
+        # 2. Tìm đường đi (Routing)
+        # (Dùng hàm get_route trong Routing.py)
+        route_geometry = Routing.get_route(user_lat, user_lon, dest_lat, dest_lon)
+        
+        # Trả về geometry để JS vẽ đường
+        return jsonify({
+            'geometry': route_geometry,
+            'start_point': [user_lat, user_lon],
+            'end_point': [dest_lat, dest_lon]
+        })
+
+    except Exception as e:
+        print(f"Lỗi tìm đường: {e}")
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/geocode', methods=['POST'])
+def get_coordinates():
+    """
+    API nhận địa chỉ (text) và trả về tọa độ (lat, lng)
+    để frontend vẽ marker ngay lập tức.
+    """
+    try:
+        data = request.get_json()
+        address = data.get('address')
+        
+        if not address:
+            return jsonify({'error': 'Thiếu địa chỉ'}), 400
+
+        # Gọi hàm geocode_address có sẵn trong Routing.py
+        lat, lon = Routing.geocode_address(address)
+        
+        return jsonify({'lat': lat, 'lng': lon})
+
+    except Exception as e:
+        print(f"Lỗi Geocode: {e}")
+        # Trả về null nếu không tìm thấy, để frontend biết mà xử lý
+        return jsonify({'lat': None, 'lng': None, 'error': str(e)})
+    
+# chay ung dung
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

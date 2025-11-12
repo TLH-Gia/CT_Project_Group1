@@ -52,7 +52,7 @@
     <div class="row" id="foodsGrid">
       {% for key, food in foods.items() %}
       <div class="col-lg-4 col-md-6 mb-4 food-item" data-area="{{ food.location }}" data-name="{{ food.name | lower }}">
-        <div class="card h-100 food-card" data-bs-toggle="modal" data-bs-target="#foodModal"
+        <div class="card h-100 food-card"
              data-name="{{ food.name }}"
              data-description="{{ food.description }}"
              data-location="{{ food.location }}"
@@ -75,7 +75,13 @@
           <div class="card-footer d-flex justify-content-between align-items-center">
             <div class="small text-muted">Giá: {{ food.price }}</div>
             <div>
-              <button class="btn btn-sm btn-outline-secondary me-1" title="Xem trên bản đồ"><i class="fa-solid fa-location-dot"></i></button>
+              <button class="btn btn-sm btn-outline-secondary me-1 location-dot" 
+                      title="Xem trên bản đồ" 
+                      data-bs-toggle="modal" 
+                      data-bs-target="#mapModal"
+                      data-location="{{ food.location }}">
+                  <i class="fa-solid fa-location-dot"></i>
+              </button>
               <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#foodModal"
                       data-name="{{ food.name }}"
                       data-description="{{ food.description }}"
@@ -117,6 +123,34 @@
             </div>
             <div class="modal-footer border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tìm đường đến quán ăn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                
+                <div class="mb-3">
+                    <label for="userOriginInput" class="form-label fw-bold">Vị trí của bạn:</label>
+                    <div class="input-group">
+                        <input type="text" id="userOriginInput" class="form-control" placeholder="VD: Chợ Bến Thành, Quận 1...">
+                        <button class="btn btn-primary" id="btnFindRoute">
+                            <i class="fa-solid fa-route"></i> Tìm đường
+                        </button>
+                    </div>
+                    <small class="text-muted">Nhập địa chỉ hiện tại của bạn để xem đường đi.</small>
+                </div>
+
+                <input type="hidden" id="destinationHidden">
+
+                <div id="map" style="height: 450px; width: 100%; border-radius: 8px; border: 1px solid #ddd;"></div>
+                
             </div>
         </div>
     </div>

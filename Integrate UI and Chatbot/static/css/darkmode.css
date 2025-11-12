@@ -50,3 +50,11 @@ body.dark .modal-content{
   background: black;
   color:white;
 }
+
+body.dark .brand-title{
+    color:white;
+}
+
+body.dark .nav-link{
+    color: white;
+}
