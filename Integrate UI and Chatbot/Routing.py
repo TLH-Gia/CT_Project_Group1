@@ -2,9 +2,10 @@ import requests
 import openrouteservice
 import json
 import os
-
-GOONG_API_KEY = "lH4SZVZGpUOOUhv8VhnNcOu9xwkAjwKjIMtLvQXG"
-ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjhjMGQ3MWFhODc1MjRhNzJhNjg1YmYxNGI2ZjliNjU2IiwiaCI6Im11cm11cjY0In0="
+from dotenv import load_dotenv
+load_dotenv()
+GOONG_API_KEY = os.getenv("GOONG_API_KEY")
+ORS_API_KEY = os.getenv("ORS_API_KEY")
 
 ors_client = openrouteservice.Client(key=ORS_API_KEY)
 
