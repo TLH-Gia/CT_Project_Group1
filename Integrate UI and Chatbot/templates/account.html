@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Thông tin tài khoản</h2>
+                    <p><strong>Tên người dùng:</strong> {{ user.username }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <h2>Nhật ký quán ăn của bạn</h2>
+            <hr>
+
+            <!-- Form để thêm bài đăng mới -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Thêm một địa điểm mới</h3>
+                    <form method="POST" action="{{ url_for('add_post') }}">
+                        <div class="form-group">
+                            <label for="title">Tên quán ăn / Tiêu đề</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label for="content">Cảm nhận của bạn</label>
+                            <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Đăng bài</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Hiển thị các bài đăng cũ -->
+            {% if posts %}
+                {% for post in posts|reverse %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ post.title }}</h4>
+                        <p class="card-text">{{ post.content }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>Bạn chưa có bài đăng nào. Hãy chia sẻ cảm nhận về một quán ăn bạn đã ghé qua!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,8 +1,58 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 import SearchModule
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_bcrypt import Bcrypt
+
+import os
 
 # Khởi tạo ứng dụng Flask
 app = Flask(__name__)
+
+
+# --- Cấu hình cho Database và Authentication ---
+# Cần một SECRET_KEY để bảo vệ session của người dùng
+app.config['SECRET_KEY'] = 'mot-chuoi-bi-mat-rat-kho-doan' 
+# Thiết lập đường dẫn đến file database SQLite
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Khởi tạo các đối tượng
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login' # Nếu người dùng chưa đăng nhập, chuyển đến route 'login'
+login_manager.login_message_category = 'info' # Tùy chỉnh thông báo flash
+
+# --- Định nghĩa các Model cho Database ---
+
+# Model cho Người dùng (User)
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+    # Quan hệ một-nhiều: Một người dùng có thể có nhiều bài đăng
+    posts = db.relationship('Post', backref='author', lazy=True)
+
+    def __repr__(self):
+        return f"User('{self.username}')"
+
+# Model cho Bài đăng Nhật ký (Post)
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    # Lưu khóa ngoại đến id của người dùng
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f"Post('{self.title}')"
+
+# Flask-Login cần hàm này để load người dùng từ session
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Dữ liệu mẫu về các món ăn
 # Trong một dự án thực tế, dữ liệu này nên được lấy từ database
@@ -102,7 +152,96 @@ def api_chat():
     except Exception as e:
         print(f"Lỗi tại /api/chat: {e}")
         return jsonify({'error': str(e)}), 500
+    
+# --- Route MỚI cho Trang Tài Khoản ---
+@app.route('/account')
+@login_required # Yêu cầu người dùng phải đăng nhập để truy cập trang này
+def account_page():
+    """
+    Hiển thị trang tài khoản với thông tin người dùng và nhật ký của họ.
+    """
+    # Lấy tất cả các bài đăng của người dùng hiện tại từ database
+    user_posts = Post.query.filter_by(author=current_user).all()
+    return render_template('account.html', user=current_user, posts=user_posts)
+
+# --- Route MỚI để xử lý việc thêm bài đăng ---
+@app.route('/add_post', methods=['POST'])
+@login_required
+def add_post():
+    """
+    Xử lý việc thêm một bài đăng nhật ký mới.
+    """
+    title = request.form.get('title')
+    content = request.form.get('content')
+
+    if title and content:
+        new_post = Post(title=title, content=content, author=current_user)
+        db.session.add(new_post)
+        db.session.commit()
+        flash('Bài viết của bạn đã được đăng!', 'success')
+    else:
+        flash('Tiêu đề và nội dung không được để trống.', 'danger')
+        
+    return redirect(url_for('account_page'))
+
+
+# --- Routes MỚI cho Đăng ký, Đăng nhập, Đăng xuất ---
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index')) # Nếu đã đăng nhập, về trang chủ
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        # Kiểm tra xem username đã tồn tại chưa
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash('Tên người dùng này đã tồn tại. Vui lòng chọn tên khác.', 'danger')
+            return redirect(url_for('register'))
+
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        user = User(username=username, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        flash('Tài khoản của bạn đã được tạo! Bây giờ bạn có thể đăng nhập.', 'success')
+        return redirect(url_for('login'))
+        
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index')) # Nếu đã đăng nhập, về trang chủ
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user, remember=True)
+            # Chuyển hướng đến trang mà người dùng định truy cập trước khi bị yêu cầu đăng nhập
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('account_page'))
+        else:
+            flash('Đăng nhập không thành công. Vui lòng kiểm tra lại tên người dùng và mật khẩu.', 'danger')
+            
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 
 # Chạy ứng dụng
 if __name__ == '__main__':
+    # Dòng code này sẽ tạo ra các bảng (như user, post) trong database
+    # nếu chúng chưa tồn tại.
+    with app.app_context():
+        db.create_all()
+    
     app.run(debug=True, port=5000)
